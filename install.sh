@@ -75,29 +75,33 @@ kv() {
             elif launchctl list | grep -q "com.kernelav.engine"; then echo "✅ Kernel Antivirus is RUNNING."
             else echo "❌ Kernel Antivirus is STOPPED."; fi ;;
         api_key)
-            [ -z "$2" ] && echo "Usage: kv api_key <key>" || ($PY -c "import sys, json; sys.path.append('$APP'); import antivirus; cfg=antivirus.load_config(); cfg['api_key']='$2'; json.dump(cfg, open('$CFG','w'), indent=4)" && echo "✅ API key updated.") ;;
+            [ -z "$2" ] && echo "Usage: kv api_key <key>" || ($PY -c "import sys, json; sys.path.insert(0, '$APP'); import antivirus; cfg=antivirus.load_config(); cfg['api_key']='$2'; json.dump(cfg, open('$CFG','w'), indent=4)" && echo "✅ API key updated.") ;;
         stats)
-            $PY -c "import sys; sys.path.append('$APP'); import antivirus; st=antivirus.get_stats(); print(f'📊 Scanned: {st[\"clean\"]+st[\"suspicious\"]+st[\"malicious\"]} | Clean: {st[\"clean\"]} | Suspicious: {st[\"suspicious\"]} | Malicious: {st[\"malicious\"]} | Vault: {st[\"quarantined\"]} | Last Scan: {st[\"last_scan\"]}')" ;;
+            $PY -c "import sys; sys.path.insert(0, '$APP'); import antivirus; st=antivirus.get_stats(); print(f'📊 Scanned: {st[\"clean\"]+st[\"suspicious\"]+st[\"malicious\"]} | Clean: {st[\"clean\"]} | Suspicious: {st[\"suspicious\"]} | Malicious: {st[\"malicious\"]} | Vault: {st[\"quarantined\"]} | Last Scan: {st[\"last_scan\"]}')" ;;
         whitelist)
-            [ -z "$2" ] && echo "Usage: kv whitelist <path>" || $PY -c "import sys, os, json; sys.path.append('$APP'); import antivirus; cfg=antivirus.load_config(); p=os.path.abspath(os.path.expanduser('$2')); wl=cfg.get('whitelist',[]); wl.append(p) if p not in wl else None; cfg['whitelist']=wl; json.dump(cfg, open('$CFG','w'), indent=4); print('✅ Whitelisted:', p)" ;;
+            [ -z "$2" ] && echo "Usage: kv whitelist <path>" || $PY -c "import sys, os, json; sys.path.insert(0, '$APP'); import antivirus; cfg=antivirus.load_config(); p=os.path.abspath(os.path.expanduser('$2')); wl=cfg.get('whitelist',[]); wl.append(p) if p not in wl else None; cfg['whitelist']=wl; json.dump(cfg, open('$CFG','w'), indent=4); print('✅ Whitelisted:', p)" ;;
         unwhitelist)
-            [ -z "$2" ] && echo "Usage: kv unwhitelist <path>" || $PY -c "import sys, os, json; sys.path.append('$APP'); import antivirus; cfg=antivirus.load_config(); p=os.path.abspath(os.path.expanduser('$2')); cfg['whitelist']=[x for x in cfg.get('whitelist',[]) if x != p]; json.dump(cfg, open('$CFG','w'), indent=4); print('🗑️  Removed:', p)" ;;
+            [ -z "$2" ] && echo "Usage: kv unwhitelist <path>" || $PY -c "import sys, os, json; sys.path.insert(0, '$APP'); import antivirus; cfg=antivirus.load_config(); p=os.path.abspath(os.path.expanduser('$2')); cfg['whitelist']=[x for x in cfg.get('whitelist',[]) if x != p]; json.dump(cfg, open('$CFG','w'), indent=4); print('🗑️  Removed:', p)" ;;
         config)
-            $PY -c "import sys, json; sys.path.append('$APP'); import antivirus; c=antivirus.load_config(); c['api_key']='***HIDDEN***' if c.get('api_key') else ''; print(json.dumps(c, indent=4))" ;;
+            $PY -c "import sys, json; sys.path.insert(0, '$APP'); import antivirus; c=antivirus.load_config(); c['api_key']='***HIDDEN***' if c.get('api_key') else ''; print(json.dumps(c, indent=4))" ;;
         restore_path)
-            [ -z "$2" ] && echo "Usage: kv restore_path <dir>" || (TD="${2/#\~/$HOME}"; mkdir -p "$TD"; $PY -c "import sys, json; sys.path.append('$APP'); import antivirus; cfg=antivirus.load_config(); cfg['restore_path']='$TD'; json.dump(cfg, open('$CFG','w'), indent=4)"; echo "✅ Restore path: $TD") ;;
+            [ -z "$2" ] && echo "Usage: kv restore_path <dir>" || (TD="${2/#\~/$HOME}"; mkdir -p "$TD"; $PY -c "import sys, json; sys.path.insert(0, '$APP'); import antivirus; cfg=antivirus.load_config(); cfg['restore_path']='$TD'; json.dump(cfg, open('$CFG','w'), indent=4)"; echo "✅ Restore path: $TD") ;;
         autoscan_folders)
-            [ -z "$2" ] && echo "Usage: kv autoscan_folders <d1,d2>" || $PY -c "import sys, os, json; sys.path.append('$APP'); import antivirus; cfg=antivirus.load_config(); cfg['scan_dirs']=[os.path.abspath(os.path.expanduser(p.strip())) for p in '$2'.split(',') if p.strip()]; json.dump(cfg, open('$CFG','w'), indent=4); print('✅ Updated scan_dirs')" ;;
+            [ -z "$2" ] && echo "Usage: kv autoscan_folders <d1,d2>" || $PY -c "import sys, os, json; sys.path.insert(0, '$APP'); import antivirus; cfg=antivirus.load_config(); cfg['scan_dirs']=[os.path.abspath(os.path.expanduser(p.strip())) for p in '$2'.split(',') if p.strip()]; json.dump(cfg, open('$CFG','w'), indent=4); print('✅ Updated scan_dirs')" ;;
         scan_time)
-            [ -z "$2" ] && echo "Usage: kv scan_time <HH:MM>" || ($PY -c "import sys, json; sys.path.append('$APP'); import antivirus; cfg=antivirus.load_config(); cfg['daily_scan_time']='$2'; json.dump(cfg, open('$CFG','w'), indent=4)" && pkill -f "$APP/antivirus.py" 2>/dev/null || true && echo "✅ Daily scan time: $2") ;;
+            [ -z "$2" ] && echo "Usage: kv scan_time <HH:MM>" || ($PY -c "import sys, json; sys.path.insert(0, '$APP'); import antivirus; cfg=antivirus.load_config(); cfg['daily_scan_time']='$2'; json.dump(cfg, open('$CFG','w'), indent=4)" && pkill -f "$APP/antivirus.py" 2>/dev/null || true && echo "✅ Daily scan time: $2") ;;
         log_autodelete)
-            [ -z "$2" ] && echo "Usage: kv log_autodelete <days>" || ($PY -c "import sys, json; sys.path.append('$APP'); import antivirus; cfg=antivirus.load_config(); cfg['log_retention_days']=int('$2'); json.dump(cfg, open('$CFG','w'), indent=4); antivirus.cleanup_old_logs()" && echo "✅ Log retention: $2 day(s)") ;;
+            [ -z "$2" ] && echo "Usage: kv log_autodelete <days>" || ($PY -c "import sys, json; sys.path.insert(0, '$APP'); import antivirus; cfg=antivirus.load_config(); cfg['log_retention_days']=int('$2'); json.dump(cfg, open('$CFG','w'), indent=4); antivirus.cleanup_old_logs()" && echo "✅ Log retention: $2 day(s)") ;;
         clear_logs) > "$APP/antivirus.log" && echo "🧹 Logs cleared." ;;
-        scan_now) $PY -c "import sys; sys.path.append('$APP'); import antivirus; antivirus.daily_scan()" ;;
+        procs)
+            $PY -c "import sys; sys.path.insert(0, '$APP'); import antivirus; antivirus.inspect_processes(print_report=True)" ;;
+        scan_procs)
+            $PY -c "import sys; sys.path.insert(0, '$APP'); import antivirus; antivirus.scan_running_processes(interactive=True)" ;;
+        scan_now) $PY -c "import sys; sys.path.insert(0, '$APP'); import antivirus; antivirus.daily_scan()" ;;
         logs) tail -n 20 -f "$APP/antivirus.log" ;;
-        scan) [ -z "$2" ] && echo "Usage: kv scan <file>" || ($PY -c "import sys; sys.path.append('$APP'); import antivirus; antivirus.check_file_vt('$2', allow_upload=True)" && tail -n 1 "$APP/antivirus.log") ;;
+        scan) [ -z "$2" ] && echo "Usage: kv scan <file>" || ($PY -c "import sys; sys.path.insert(0, '$APP'); import antivirus; antivirus.check_file_vt('$2', allow_upload=True)" && tail -n 1 "$APP/antivirus.log") ;;
         quarantine) ls -lh "$HOME/.kernel_quarantine" 2>/dev/null || echo "Vault is empty." ;;
-        restore) [ -z "$2" ] && echo "Usage: kv restore <file>" || (RD=$($PY -c "import sys; sys.path.append('$APP'); import antivirus; print(antivirus.load_config()['restore_path'])"); mkdir -p "$RD" && chmod 644 "$HOME/.kernel_quarantine/$2" && mv "$HOME/.kernel_quarantine/$2" "$RD/${2%.quarantined}" && echo "✅ Restored to $RD/${2%.quarantined}") ;;
+        restore) [ -z "$2" ] && echo "Usage: kv restore <file>" || (RD=$($PY -c "import sys; sys.path.insert(0, '$APP'); import antivirus; print(antivirus.load_config()['restore_path'])"); mkdir -p "$RD" && chmod 644 "$HOME/.kernel_quarantine/$2" && mv "$HOME/.kernel_quarantine/$2" "$RD/${2%.quarantined}" && echo "✅ Restored to $RD/${2%.quarantined}") ;;
         purge) rm -f "$HOME/.kernel_quarantine"/* && echo "🗑️  Vault emptied." ;;
         restart) rm -f "$HOME/.kernel_paused" && pkill -f "$APP/antivirus.py" 2>/dev/null || true && echo "🔄 Restarted." ;;
         stop) touch "$HOME/.kernel_paused" && echo "🛑 Paused." ;;
